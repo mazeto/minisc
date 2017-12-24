@@ -1,0 +1,31 @@
+s/ADD/1/g
+s/SUB/2/g
+s/MUL/3/g
+s/DIV/4/g
+s/MOD/5/g
+s/INC/6/g
+s/DEC/7/g
+s/AND/8/g
+s/OR/9/g
+s/XOR/a/g
+s/CMP/b/g
+s/BEQ/c/g
+s/BIZ/d/g
+s/LUR/e/g
+s/OP OP/0/g
+s/OP RG/1/g
+s/OP PC/2/g
+s/OP ST/3/g
+s/RG OP/4/g
+s/RG RG/5/g
+s/RG PC/6/g
+s/RG ST/7/g
+s/PC OP/8/g
+s/PC RG/9/g
+s/PC PC/a/g
+s/PC ST/b/g
+s/ST OP/c/g
+s/ST RG/d/g
+s/ST PC/e/g
+s/ST ST/f/g
+s/ //g
