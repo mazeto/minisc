@@ -1,13 +1,13 @@
 
 ## MISC - Minimal Instruction Set Computing
 
-    0.3v   data
-       | ||||||||
-       ##########
-       # miscpu #
-       ##########
-       | ||||||||
-     gnd   addr
+    .3v   data
+      | ||||||||
+      ##########
+      # miscpu #
+      ##########
+      | ||||||||
+    gnd   addr
 
 The MISC architecture is a fictional Turing Machine, that ships with an emulator written in C. A MISC CPU have:
 
@@ -29,10 +29,10 @@ It can address up to 256 bytes, with no bank switching. The MISC CPU don't have 
 
 The following table shows the encoding of the high nibble for each instruction.
 
-    nul add sub mul  |  0 1 2 3
-    div mod inc dec  |  4 5 6 7
-    and or  xor cmp  |  8 9 A B
-    beq biz lur ...  |  C D E F
+    add sub mul div  |  0 1 2 3
+    mod inc dec lur  |  4 5 6 7
+    and  or xor cmp  |  8 9 A B
+    biz bis biq big  |  C D E F
 
 ### Registers
 
@@ -55,30 +55,29 @@ The following table shows how the instruction is encoded for the target and sour
 
 
 ### Status bits
-    zer sml eql gtr
-    neg car skp int
+    zer  sml  eql  gtr
+    neg  car  skp? int?
 
-The skp flag tells the MISC cpu that the next byte should not be interpreted as a instruction, but as data.
+The skp flag tells the MISC cpu that the next byte should not be interpreted as a instruction, but as data. The 'int' status flag sets the OP register to 0xf0, making the CPU jump to the last "page". But I'm not sure if they're really necessary yet. So let they be placeholders.
 
-Giving each state its own bit on the status register is a waste of space, because 1 byte can hold up to 256 different combinations of values and no operation would turn on all the logic bits on (negative, carry, zero, smaller, equal and greater), so the MISC CPU stores the status of the last operation on the higher nibble of the status register and gives the programmer the lower nibble to use as storage, which can store up to 16 different values!  But nothing prevents you from using the whole status register as storage.
+Here's a list of all the operators and which bits they may set on the status register. The values marked with a question mark need to be checked.
 
-Here's a list of all the operators and which status they may set on the status high nibble. The values marked with a question mark need to be checked.
-
-    nul -> none
-    add -> equal | carry
-    sub -> equal | negative
-    mul -> equal | carry
+    add -> zero  | equal | carry
+    sub -> zero  | equal | negative
+    mul -> zero  | equal | carry
     div -> equal
     mod -> zero
     inc -> zero (overflow or carry)
     dec -> zero (underflow or negative)
+    lur -> none
     and -> zero | equal | greater? | smaller?
     or  -> zero | equal | greater? | smaller?
     xor -> zero | equal? | greater? | smaller?
-    lur -> none
-    cmp -> ...
-    biz
-    beq
+    cmp -> smaller | equal | greater
+    biz -> none
+    bis -> none
+    biq -> none
+    big -> none
 
 ### Macros
 

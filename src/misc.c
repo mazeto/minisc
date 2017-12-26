@@ -16,67 +16,51 @@
 #define ST (reg[3])
 
 /* If the source is the source, then
-   get the next word instead. Same for target
-                       t\s  op rg pc st
-                       op | 0  1  2  3
-                       rg | 4  5  6  7
-                       pc | 8  9  A  B
-                       st | C  D  E  F
-                       0 0000
-                       1 0001
-                       2 0010
-                       3 0011
-                       4 0100
-                       5 0101
-                       6 0110
-                       7 0111
-                       8 1000
-                       9 1001
-                       a 1010
-                       b 1011
-                       c 1100
-                       d 1101
-                       e 1110
-                       f 1111
-*/
-#define SOURCE (      OP & S_MASK    ? \
-                 &reg[OP & S_MASK]   : \
-                 &ram[PC + 1]          )
+   get the next word instead. Same for target */
+#define SOURCE (       OP & S_MASK    ? \
+                  &reg[OP & S_MASK]   : \
+                  &ram[PC + 1]          )
 #define TARGET (       OP & T_MSK2     ?\
                  &reg[(OP & T_MSK2)/4] :\
                   &ram[PC + 1]          )
 
 /* enums for the goto jump table */
-enum { nul=0x00, add=0x10, sub=0x20, mul=0x30, /* 0 1 2 3 */
-       div=0x40, mod=0x50, inc=0x60, dec=0x70, /* 4 5 6 7 */
-       and=0x80,  or=0x90, xor=0xa0, cmp=0xb0, /* 8 9 a b */
-       beq=0xc0, biz=0xd0, lur=0xe0, ret=0xf0  /* c d e f */
+enum { add, sub, mul, div, /* 0 1 2 3 */
+       mod, inc, dec, lur, /* 4 5 6 7 */
+       and,  or, xor, cmp, /* 8 9 a b */
+       biz, bis, biq, big  /* c d e f */
 };
 
 /* Status flag masks */
 enum {
-    zr=0x01, /* zero */
-    lt=0x02, /* less than */
-    eq=0x04, /* equal */
-    gt=0x08, /* greater than */
-    cr=0x10, /* carry (overflow) */
-    ng=0x20, /* negative */
-    _x=0x40, /* unused... */
-    _y=0x80  /* unused... */
+    zr=0x01, /* zero            */
+    lt=0x02, /* less than       */
+    eq=0x04, /* equal           */
+    gt=0x08, /* greater than    */
+    cr=0x10, /* carry, overflow */
+    ng=0x20, /* negative        */
+    _x=0x40, /* unused...       */
+    _y=0x80  /* unused...       */
 };
 
 int main(int argc, char ** argv){    
     u8 reg[4] = {0, 0, 0, 0};
-    u8 *s=0x00, *t=0x00, ram[256];
+    u8 *s=0, *t=0, _t=0, ram[256];
     s32 c;
     FILE *fp;
     struct timespec nap;
+    /**  125.000.000 for   8hz
+     **    3.906.250 for 256hz
+    nap.tv_nsec = (long) 3906250;
+    **/
+    nap.tv_sec = 0;
+    nap.tv_nsec = (long) 125000000;
 
     /* jump table for gotos */
-    void * jmps[16] = {&&nul, &&add, &&sub, &&mul,
-                       &&div, &&mod, &&inc, &&dec,
+    void * jmps[16] = {&&add, &&sub, &&mul, &&div,
+                       &&mod, &&inc, &&dec, &&lur,
                        &&and, &&or,  &&xor, &&cmp,
-                       &&beq, &&biz, &&lur, &&ret
+                       &&biz, &&bis, &&biq, &&big
     };
 
     /* exits if we don't have arguments */
@@ -89,91 +73,77 @@ int main(int argc, char ** argv){
     /* zeros the ram */
     PC=0;do{ram[PC]=0;PC++;}while(PC);
 
-    /**  125.000.000 for   8hz
-     **    3.906.250 for 256hz
-    nap.tv_nsec = (long) 3906250;
-    **/
-    nap.tv_sec = 0;
-    nap.tv_nsec = (long) 125000000;
-
     /* reads file to ram */
     while((c = fgetc(fp)) != EOF){
-        printf("%02x ", c);
         ram[PC] = c;
+        printf("%02x ", ram[PC]);
         PC++;
-        if(!(PC%16)) puts("");
+        if(!(PC%16))puts("");
         /*nanosleep(&nap, NULL);*/
     };  puts("");
+
     PC=255;
-    goto cycle;
-
-    dump_ram:
-        PC=0;
-        do{
-            printf("%2x ", ram[PC]);
-            PC++;
-            if(!(PC%16))puts("");
-        }while(PC != 255);
-
     cycle:
         PC++;
         OP = ram[PC];
         s = SOURCE;
         t = TARGET;
+        _t = *t; /* set the latch target register */
+        printf("OP=%02x, RG=%02x, PC=%02x, ST=%02x, s=%02x, t=%02x, ",
+                    OP,      RG,      PC,      ST,   *s,  *t);
         nanosleep(&nap, NULL);
-        printf("OP=%02x, RG=%02x, PC=%02x, ST=%02x, %02x.%02x ",
-                OP,     RG,     PC,     ST,         *s,*t);
         /* dynamic jump */
         goto *(jmps[(OP&O_MASK)>>4]);
 
     add:
         puts("add'ing");
         *t += *s;
+        if(!*t)      ST |= zr;
+        if(*t == _t) ST |= eq;
+        if(*t < _t)  ST |= cr;
         goto cycle;
 
     sub:
-        puts("sub'bing");
+        puts("sub'ing");
         *t -= *s;
+        if (!*t)      ST |= zr;
+        if (*t == _t) ST |= eq;
+        if(*t > _t)   ST |= ng;
         goto cycle;
 
     mul:
         puts("mul'ing");
         *t *= *s;
+        if (!*t)     ST |= zr;
+        if (*t < _t) ST |= cr;
         goto cycle;
 
     div:
         puts("div'ing");
-        *t /= *s;
+        /* avoid dividing by zero */
+        if (*s != 0) *t /= *s;
+        else ST |= zr;
         goto cycle;
 
     mod:
         puts("mod'ing");
-        *t %= *s;
+        /* avoid dividing by zero */
+        if (*s != 0) *t %= *s;
+        else ST |= zr; /* ? */
         goto cycle;
 
     inc:
         puts("inc'ing");
         (*t)++;
+        if (!*t)     ST |= cr;
+        if (*t == 0) ST |= (zr & cr);
         goto cycle;
 
     dec:
         puts("dec'ing");
         (*t)--;
-        goto cycle;
-
-    and:
-        puts("and'ing");
-        *t &= *s;
-        goto cycle;
-
-    or:
-        puts("or'ing");
-        *t |= *s;
-        goto cycle;
-
-    xor:
-        puts("xor'ing");
-        *t ^= *s;
+        if (!*t)       ST |= zr;
+        if (*t == 255) ST |= (zr & ng);
         goto cycle;
 
     lur: /* load/unload registers (LOAD/STORE) */
@@ -181,23 +151,66 @@ int main(int argc, char ** argv){
         *t = *s;
         goto cycle;
 
+    and:
+        puts("and'ing");
+        *t &= *s;
+        if (!*t) ST |= zr;
+        if (*t < _t) ST |= lt;
+        if (*t > _t) ST |= gt;
+        if (*t == _t) ST |= eq;
+        else ST ^= eq;
+        goto cycle;
+
+    or:
+        puts(" or'ing");
+        *t |= *s;
+        if (!*t) ST |= zr;
+        if (*t < _t) ST |= lt;
+        if (*t > _t) ST |= gt;
+        if (*t == _t) ST |= eq;
+        else ST ^= eq;
+        goto cycle;
+
+    xor:
+        puts("xor'ing");
+        *t ^= *s;
+        if (!*t) ST |= zr;
+        if (*t < _t) ST |= lt;
+        if (*t > _t) ST |= gt;
+        if (*t == _t) ST |= eq;
+        else ST ^= eq;
+        goto cycle;
+
     cmp:
-        puts("cmp'ring");
-        (SOURCE == TARGET) ? (ST |= eq) : (ST ^= eq);
+        puts("cmp'ing");
+        if (*t < *s) ST |= lt;
+        if (*t > *s) ST |= gt;
+        if (*t == *s) ST |= eq;
+        else ST ^= eq;
         goto cycle;
 
     biz:
         puts("biz'ing");
-        goto cycle;
-    nul:
-        puts("nul'ling");
-        goto cycle;
-    beq:
-        puts("beq'ing");
+        /* OP+1 to get the next word,
+         * -1 'cause the 1st thing the cycle does
+         * is increment the OP */
+        if (ST & zr) OP = ram[OP+1]-1;
         goto cycle;
 
-    ret:
-        puts("ret'urning");
-        return 0;
-    goto dump_ram;
+    bis: /* branch if smaller */
+        puts("bis'ing");
+        if (ST & lt) OP = ram[OP+1]-1;
+        goto cycle;
+
+    biq: /* branch if eQual */
+        puts("biq'ing");
+        if (ST & eq) OP = ram[OP+1]-1;
+        goto cycle;
+
+    big:
+        puts("big'ing");
+        if (ST & gt) OP = ram[OP+1]-1;
+        goto cycle;
+
+    return 0; /* unreachable */
 }
