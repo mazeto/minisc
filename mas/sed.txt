@@ -1,31 +1,31 @@
-s/ADD/1/g
-s/SUB/2/g
-s/MUL/3/g
-s/DIV/4/g
-s/MOD/5/g
-s/INC/6/g
-s/DEC/7/g
-s/AND/8/g
-s/OR/9/g
-s/XOR/a/g
-s/CMP/b/g
-s/BEQ/c/g
-s/BIZ/d/g
-s/LUR/e/g
-s/OP OP/0/g
-s/OP RG/1/g
-s/OP PC/2/g
-s/OP ST/3/g
-s/RG OP/4/g
-s/RG RG/5/g
-s/RG PC/6/g
-s/RG ST/7/g
-s/PC OP/8/g
-s/PC RG/9/g
-s/PC PC/a/g
-s/PC ST/b/g
-s/ST OP/c/g
-s/ST RG/d/g
-s/ST PC/e/g
-s/ST ST/f/g
+s/add/1/g
+s/sub/2/g
+s/mul/3/g
+s/div/4/g
+s/mod/5/g
+s/inc/6/g
+s/dec/7/g
+s/and/8/g
+s/or/9/g
+s/xor/a/g
+s/cmp/b/g
+s/beq/c/g
+s/biz/d/g
+s/lur/e/g
+s/op op/0/g
+s/op rg/1/g
+s/op pc/2/g
+s/op st/3/g
+s/rg op/4/g
+s/rg rg/5/g
+s/rg pc/6/g
+s/rg st/7/g
+s/pc op/8/g
+s/pc rg/9/g
+s/pc pc/a/g
+s/pc st/b/g
+s/st op/c/g
+s/st rg/d/g
+s/st pc/e/g
+s/st st/f/g
 s/ //g

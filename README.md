@@ -1,22 +1,23 @@
 
-## MISC - Minimal Instruction Set Computing
+## MINISC - Minimal Instruction Set Computing
 
     .3v   data
       | ||||||||
       ##########
-      # miscpu #
+      # minisc #
       ##########
       | ||||||||
     gnd   addr
 
-The MISC architecture is a fictional Turing Machine, that ships with an emulator written in C. A MISC CPU have:
+The MINISC architecture is an emulator written in C, of a fictional minimal Von Neumann Turing Machine. A MINISC CPU have:
 
+- 4 internal registers.
 - 8 data pins.
 - 8 address pins.
 - one pin for .3 Volts input.
 - ground pin. 
 
-It can address up to 256 bytes, with no bank switching. The MISC CPU don't have I/O ports, but it can interface with external devices via shared RAM. Although thread-locking wasn't implemented yet.
+It can address up to 256 bytes, with no bank switching. The MINISC CPU don't have I/O ports, but it can interface with external devices via shared RAM.
 
 ### Instruction Layout
 
@@ -43,7 +44,9 @@ The following table shows the encoding of the high nibble for each instruction.
     pc = program counter
     st = status
 
-The MISC architecture gives you full access to the status and program counter registers, both as source and target. You can manually clear the status registers, jump by loading the address on the program counter,
+The MINISC architecture gives you full access to the status and program counter registers, both as source and target. You can manually clear the status registers, or jump by loading the address on the program counter.
+
+When the source and/or target of the current instruction is OP, it refers to the next instruction. That's how the CPU writes to RAM.
 
 The following table shows how the instruction is encoded for the target and source lower nibble.
 
@@ -58,7 +61,7 @@ The following table shows how the instruction is encoded for the target and sour
     zer  sml  eql  gtr
     neg  car  skp? int?
 
-The skp flag tells the MISC cpu that the next byte should not be interpreted as a instruction, but as data. The 'int' status flag sets the OP register to 0xf0, making the CPU jump to the last "page". But I'm not sure if they're really necessary yet. So let they be placeholders.
+The skp flag tells the MINISC cpu that the next byte should not be interpreted as a instruction, but as data. The 'int' status flag sets the OP register to 0xf0, making the CPU jump to the last "page". But I'm not sure if they're really necessary yet. So let they be placeholders.
 
 Here's a list of all the operators and which bits they may set on the status register. The values marked with a question mark need to be checked.
 
@@ -81,7 +84,7 @@ Here's a list of all the operators and which bits they may set on the status reg
 
 ### Macros
 
-The MISC CPU don't have a jmp instruction, But who needs it? you can load the desired address directly into the PC register.
+The MINISC CPU don't have a jmp instruction, But who needs it? you can load the desired address directly into the PC register.
 
     jmp $AD = ldr PC
               $AD
