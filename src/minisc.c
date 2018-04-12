@@ -43,7 +43,7 @@ enum {
     _y=0x80  /* unused...       */
 };
 
-int main(int argc, char ** argv){    
+int main(int argc, char ** argv){
     u8 reg[4] = {0, 0, 0, 0};
     u8 *s=0, *t=0, _t=0, ram[256];
     s32 c;

@@ -1,17 +1,22 @@
-s/add/1/g
-s/sub/2/g
-s/mul/3/g
-s/div/4/g
-s/mod/5/g
-s/inc/6/g
-s/dec/7/g
+s/[0-9]+:[ ]+//g
+s/jmp/78/g
+s/\$/\n/g
+s/add/0/g
+s/sub/1/g
+s/mul/2/g
+s/div/3/g
+s/mod/4/g
+s/inc/5/g
+s/dec/6/g
+s/lur/7/g
 s/and/8/g
 s/or/9/g
 s/xor/a/g
 s/cmp/b/g
-s/beq/c/g
-s/biz/d/g
-s/lur/e/g
+s/biz/c/g
+s/bis/d/g
+s/biq/e/g
+s/big/f/g
 s/op op/0/g
 s/op rg/1/g
 s/op pc/2/g

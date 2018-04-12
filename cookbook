@@ -1,0 +1,10 @@
+
+CC=gcc
+CFLAGS="-W -Wall -Werror -Wextra -O0 -s"
+
+contains tcc   $@ && CC=tcc
+contains clang $@ && CC=clang
+
+check bin/minisc src/minisc.c \
+  && $CC $CFLAGS -o bin/minisc $DEPS
+
