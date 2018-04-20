@@ -6,8 +6,6 @@ contains tcc   $@ && CC=tcc
 contains clang $@ && CC=clang
 contains clean $@ && rm -v bin/minisc && exit
 
-[[ $CC == gcc ]] && CFLAGS="$CFLAGS -DGCC"
-
 check bin/minisc src/minisc.c \
   && $CC $CFLAGS -o bin/minisc $DEPS
 
