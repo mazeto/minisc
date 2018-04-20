@@ -4,6 +4,7 @@ CFLAGS="-W -Wall -Werror -Wextra -O0 -s"
 
 contains tcc   $@ && CC=tcc
 contains clang $@ && CC=clang
+contains clean $@ && rm -v bin/minisc && exit
 
 [[ $CC == gcc ]] && CFLAGS="$CFLAGS -DGCC"
 
