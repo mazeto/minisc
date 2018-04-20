@@ -15,7 +15,7 @@ The MINISC architecture is an emulator written in C, of a fictional minimal Von 
 - 8 data pins.
 - 8 address pins.
 - one pin for .3 Volts input.
-- ground pin. 
+- ground pin.
 
 It can address up to 256 bytes, with no bank switching. The MINISC CPU don't have I/O ports, but it can interface with external devices via shared RAM.
 
